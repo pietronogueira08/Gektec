@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gektec Admin — Painel</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Archivo+Expanded:wght@800&display=swap" rel="stylesheet" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'IBM Plex Sans',sans-serif;background:#14171B;color:#E8E6E1;overflow:hidden;height:100vh}
+    #ls{position:fixed;inset:0;background:#14171B;display:flex;align-items:center;justify-content:center;z-index:200;transition:opacity .4s}
+    #ls.h{opacity:0;pointer-events:none}
+    .lb{background:#1E2128;border:1px solid #343840;border-radius:4px;padding:2.5rem;width:100%;max-width:420px}
+    .ll{font-family:'Archivo Expanded',sans-serif;font-weight:800;font-size:1.5rem;color:#E8E6E1;margin-bottom:.3rem}
+    .ll em{color:#C4272C;font-style:normal}
+    .lsub{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#8B92A0;margin-bottom:2rem}
+    .lbl{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#8B92A0;display:block;margin-bottom:.4rem}
+    .inp{width:100%;background:#14171B;border:1px solid #343840;border-radius:2px;padding:11px 14px;font-family:'IBM Plex Sans',sans-serif;font-size:.9rem;color:#E8E6E1;margin-bottom:1rem;min-height:44px;transition:border-color .2s}
+    .inp:focus{outline:none;border-color:#C4272C}
+    .lbtn{width:100%;background:#C4272C;color:#fff;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.9rem;padding:13px;border-radius:2px;border:none;cursor:pointer;min-height:44px;transition:background .2s}
+    .lbtn:hover{background:#a81f23}
+    .lhint{margin-top:1rem;padding:.8rem 1rem;background:rgba(196,39,44,.06);border:1px solid rgba(196,39,44,.2);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:#8B92A0;line-height:1.6}
+    .lhint strong{color:#E8E6E1;font-weight:400}
+    .lerr{margin-top:.5rem;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#C4272C;display:none}
+    #app{display:flex;height:100vh;overflow:hidden}
+    #sb{width:260px;min-width:260px;background:#1E2128;border-right:1px solid #343840;display:flex;flex-direction:column;height:100vh;overflow:hidden;transition:transform .3s;z-index:50}
+    .sbh{padding:1.2rem 1.5rem;border-bottom:1px solid #343840;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .sblo{font-family:'Archivo Expanded',sans-serif;font-weight:800;font-size:1.05rem;color:#E8E6E1}
+    .sblo em{color:#C4272C;font-style:normal}
+    .sbbdg{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:#8B92A0;background:#14171B;border:1px solid #343840;padding:2px 7px;border-radius:2px}
+    .sbn{flex:1;overflow-y:auto;padding:.8rem 0}
+    .sbn::-webkit-scrollbar{width:3px}
+    .sbn::-webkit-scrollbar-thumb{background:#343840;border-radius:2px}
+    .ngl{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:#4B5563;padding:1rem 1.5rem .4rem}
+    .ni{display:flex;align-items:center;gap:10px;padding:.65rem 1.5rem;cursor:pointer;font-size:.88rem;color:#8B92A0;border-left:2px solid transparent;transition:color .2s,background .2s,border-color .2s;user-select:none}
+    .ni:hover{color:#E8E6E1;background:rgba(255,255,255,.03)}
+    .ni.on{color:#E8E6E1;background:rgba(196,39,44,.08);border-left-color:#C4272C}
+    .sbf{padding:1rem 1.5rem;border-top:1px solid #343840;flex-shrink:0}
+    .blo{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#8B92A0;cursor:pointer;background:none;border:none;transition:color .2s}
+    .blo:hover{color:#C4272C}
+    #ma{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+    #tb{height:56px;background:#1E2128;border-bottom:1px solid #343840;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;flex-shrink:0;gap:1rem}
+    .tbt{font-family:'IBM Plex Mono',monospace;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#8B92A0}
+    .tbt b{color:#E8E6E1;font-weight:400}
+    .tba{display:flex;align-items:center;gap:.6rem;flex-shrink:0}
+    .brst{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#8B92A0;background:none;border:1px solid #343840;padding:6px 12px;border-radius:2px;cursor:pointer;min-height:34px;transition:border-color .2s,color .2s}
+    .brst:hover{border-color:#A9673A;color:#A9673A}
+    .bpub{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.82rem;background:#C4272C;color:#fff;border:none;padding:8px 18px;border-radius:2px;cursor:pointer;min-height:34px;display:flex;align-items:center;gap:6px;transition:background .2s}
+    .bpub:hover{background:#a81f23}
+    .bpv{display:none;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#8B92A0;background:none;border:1px solid #343840;padding:6px 12px;border-radius:2px;cursor:pointer;min-height:34px}
+    #ca{flex:1;display:flex;overflow:hidden}
+    #ep{width:400px;min-width:400px;overflow-y:auto;padding:1.5rem;background:#14171B;border-right:1px solid #343840}
+    #ep::-webkit-scrollbar{width:3px}
+    #ep::-webkit-scrollbar-thumb{background:#343840;border-radius:2px}
+    #pva{flex:1;min-width:0;display:flex;flex-direction:column;background:#0D0F12}
+    .pvb{height:40px;background:#1E2128;border-bottom:1px solid #343840;display:flex;align-items:center;padding:0 1rem;gap:.5rem;flex-shrink:0}
+    .pvd{width:10px;height:10px;border-radius:50%}
+    .pvu{flex:1;background:#14171B;border:1px solid #343840;border-radius:20px;padding:4px 14px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#8B92A0;margin:0 .5rem}
+    #frm{flex:1;border:none;width:100%}
+    .sec{display:none}
+    .sec.on{display:block}
+    .fg{margin-bottom:1.2rem}
+    .fl{font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#8B92A0;display:block;margin-bottom:.4rem}
+    .fi,.fta,.fse{width:100%;background:#1E2128;border:1px solid #343840;border-radius:2px;padding:9px 12px;font-family:'IBM Plex Sans',sans-serif;font-size:.87rem;color:#E8E6E1;min-height:38px;transition:border-color .2s;-webkit-appearance:none}
+    .fi:focus,.fta:focus,.fse:focus{outline:none;border-color:#C4272C}
+    .fta{resize:vertical;min-height:80px}
+    .fi::placeholder,.fta::placeholder{color:rgba(139,146,160,.4)}
+    .fse option{background:#1E2128;color:#E8E6E1}
+    .fcr{display:flex;align-items:center;gap:.8rem}
+    input[type=color]{width:44px;height:38px;border:1px solid #343840;border-radius:2px;background:none;cursor:pointer;padding:2px;flex-shrink:0}
+    .ce{background:#1E2128;border:1px solid #343840;border-radius:3px;padding:1rem;margin-bottom:.8rem}
+    .ceh{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+    .cen{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#C4272C;letter-spacing:.1em}
+    .brm{background:none;border:1px solid rgba(196,39,44,.3);color:rgba(196,39,44,.6);border-radius:2px;padding:3px 8px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;cursor:pointer;transition:all .2s}
+    .brm:hover{background:rgba(196,39,44,.1);color:#C4272C}
+    .badd{display:flex;align-items:center;gap:6px;background:none;border:1px dashed #343840;color:#8B92A0;border-radius:2px;padding:9px 14px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;width:100%;justify-content:center;transition:border-color .2s,color .2s}
+    .badd:hover{border-color:#C4272C;color:#E8E6E1}
+    .stit{font-family:'Archivo Expanded',sans-serif;font-weight:800;font-size:1rem;color:#E8E6E1;margin-bottom:.3rem}
+    .sdesc{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:#8B92A0;margin-bottom:1.5rem;line-height:1.5}
+    .div{border:none;border-top:1px solid #343840;margin:1.2rem 0}
+    .trow{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.8rem}
+    .tlbl{font-family:'IBM Plex Sans',sans-serif;font-size:.85rem;color:#C8C5BF}
+    .tog{position:relative;width:40px;height:22px;flex-shrink:0}
+    .tog input{opacity:0;width:0;height:0}
+    .tsl{position:absolute;inset:0;background:#343840;border-radius:22px;cursor:pointer;transition:background .2s}
+    .tsl::before{content:'';position:absolute;width:16px;height:16px;background:#E8E6E1;border-radius:50%;top:3px;left:3px;transition:transform .2s}
+    .tog input:checked+.tsl{background:#C4272C}
+    .tog input:checked+.tsl::before{transform:translateX(18px)}
+    input[type=range]{width:100%;accent-color:#C4272C;cursor:pointer}
+    .rv{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#8B92A0;text-align:right;margin-top:3px}
+    .upl{border:1px dashed #343840;border-radius:3px;padding:1.5rem;text-align:center;cursor:pointer;transition:border-color .2s;position:relative;overflow:hidden}
+    .upl:hover{border-color:#C4272C}
+    .upl input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .utxt{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:#8B92A0;line-height:1.5}
+    .upv{margin-top:.8rem;max-height:80px;object-fit:cover;width:100%;border-radius:2px;display:none}
+    #toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#1E2128;border:1px solid #343840;border-left:3px solid #25D366;padding:.8rem 1.2rem;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:#E8E6E1;z-index:500;transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none}
+    #toast.on{opacity:1;transform:translateY(0)}
+    #toast.err{border-left-color:#C4272C}
+    #bgu{display:none;background:none;border:none;cursor:pointer;padding:6px;color:#E8E6E1}
+    #ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:49}
+    .pnote{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:rgba(196,39,44,.7);background:rgba(196,39,44,.05);border:1px dashed rgba(196,39,44,.25);border-radius:2px;padding:4px 8px;margin-top:.3rem}
+    @media(max-width:900px){
+      #sb{position:fixed;top:0;left:0;height:100vh;transform:translateX(-100%);z-index:50}
+      #sb.op{transform:translateX(0)}
+      #ov.vis{display:block}
+      #bgu{display:flex}
+      #ep{width:100%;min-width:0;border-right:none}
+      #pva{display:none}
+      .bpv{display:flex!important}
+    }
+  </style>
+</head>
+<body>
+
+<div id="ls">
+  <div class="lb">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.3rem">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none"><polygon points="20,4 36,34 28,34 20,18 12,34 4,34" fill="#C4272C"/></svg>
+      <div class="ll">GEK<em>TEC</em></div>
+    </div>
+    <div class="lsub">Painel de Administracao</div>
+    <label class="lbl" for="le">E-mail</label>
+    <input class="inp" type="email" id="le" placeholder="admin@gektec.com.br" />
+    <label class="lbl" for="lp">Senha</label>
+    <input class="inp" type="password" id="lp" placeholder="••••••••" />
+    <p class="lerr" id="lerr">E-mail ou senha incorretos.</p>
+    <button class="lbtn" onclick="doLogin()">Entrar</button>
+    <div class="lhint">Credenciais demo: <strong>admin@gektec.com.br</strong> / <strong>demo1234</strong></div>
+  </div>
+</div>
+
+<div id="ov" onclick="cSB()"></div>
+
+<div id="app">
+  <nav id="sb">
+    <div class="sbh">
+      <div>
+        <div class="sblo">GEK<em>TEC</em></div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.12em;color:#8B92A0;margin-top:2px">PAINEL ADMIN</div>
+      </div>
+      <div class="sbbdg">Demo</div>
+    </div>
+    <div class="sbn">
+      <div class="ngl">Site Principal</div>
+      <div class="ni on" onclick="gS('hero')" data-s="hero"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>Hero e Abertura</div>
+      <div class="ni" onclick="gS('stats')" data-s="stats"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 20h18M8 20V10M12 20V4M16 20v-6"/></svg>Stats e Numeros</div>
+      <div class="ni" onclick="gS('servicos')" data-s="servicos"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Servicos</div>
+      <div class="ni" onclick="gS('setores')" data-s="setores"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l4 4"/></svg>Setores</div>
+      <div class="ni" onclick="gS('processo')" data-s="processo"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l3 3"/></svg>Processo Timeline</div>
+      <div class="ni" onclick="gS('difs')" data-s="difs"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Diferenciais</div>
+      <div class="ngl">Conteudo</div>
+      <div class="ni" onclick="gS('deps')" data-s="deps"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Depoimentos</div>
+      <div class="ni" onclick="gS('faq')" data-s="faq"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>FAQ</div>
+      <div class="ngl">Contato e Marca</div>
+      <div class="ni" onclick="gS('ct')" data-s="ct"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>Contato e Rodape</div>
+      <div class="ni" onclick="gS('brand')" data-s="brand"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>Branding e Cores</div>
+    </div>
+    <div class="sbf">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#4B5563;margin-bottom:.8rem">admin@gektec.com.br</div>
+      <button class="blo" onclick="doLogout()"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Sair</button>
+    </div>
+  </nav>
+
+  <div id="ma">
+    <div id="tb">
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <button id="bgu" onclick="oSB()"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <div class="tbt">Editando: <b id="secnm">Hero e Abertura</b></div>
+      </div>
+      <div class="tba">
+        <button class="brst" onclick="rstSec()">Restaurar</button>
+        <button class="bpv" onclick="window.open('index.html','_blank')">Ver site</button>
+        <button class="bpub" onclick="pub()"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Publicar</button>
+      </div>
+    </div>
+
+    <div id="ca">
+      <div id="ep">
+
+        <!-- HERO -->
+        <div class="sec on" id="s-hero">
+          <div class="stit">Hero e Abertura</div>
+          <div class="sdesc">Textos e imagem principal da primeira secao.</div>
+          <div class="fg"><label class="fl">Tag / eyebrow</label><input class="fi" id="htag" placeholder="EPC . Engenharia Eletrica Industrial..." /></div>
+          <div class="fg"><label class="fl">Headline — linha 1</label><input class="fi" id="hl1" placeholder="Energia" /></div>
+          <div class="fg"><label class="fl">Headline — linha 2</label><input class="fi" id="hl2" placeholder="em escala" /></div>
+          <div class="fg"><label class="fl">Headline — linha 3 (destaque vermelho)</label><input class="fi" id="hl3" placeholder="industrial." /></div>
+          <div class="fg"><label class="fl">Subtitulo</label><textarea class="fta" id="hsub" rows="3" placeholder="Da subestacao a usina..."></textarea></div>
+          <div class="fg"><label class="fl">CTA primario</label><input class="fi" id="hc1" placeholder="Solicitar proposta" /></div>
+          <div class="fg"><label class="fl">CTA secundario</label><input class="fi" id="hc2" placeholder="Ver servicos" /></div>
+          <hr class="div" />
+          <div class="fg">
+            <label class="fl">Imagem de fundo</label>
+            <div class="upl">
+              <input type="file" accept="image/*" onchange="upImg(this)" />
+              <div style="color:#8B92A0;margin-bottom:.5rem"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+              <div class="utxt">Clique para enviar imagem (max 5MB)</div>
+              <img class="upv" id="hipv" alt="Preview" />
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Opacidade da imagem</label>
+            <input type="range" id="hopa" min="0" max="60" value="35" oninput="document.getElementById('hopav').textContent=this.value+'%'" />
+            <div class="rv"><span id="hopav">35%</span></div>
+          </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="sec" id="s-stats">
+          <div class="stit">Stats e Numeros</div>
+          <div class="sdesc">5 indicadores na faixa de dados abaixo do headline.</div>
+          <div id="stc"></div>
+        </div>
+
+        <!-- SERVICOS -->
+        <div class="sec" id="s-servicos">
+          <div class="stit">Servicos</div>
+          <div class="sdesc">5 fichas tecnicas — Capitulo 2.</div>
+          <div class="fg"><label class="fl">Titulo editorial</label><input class="fi" id="svct" placeholder="Cinco frentes. Uma entrega integrada." /></div>
+          <div class="fg"><label class="fl">Subtitulo editorial</label><textarea class="fta" id="svcs" rows="2" placeholder="Nao oferecemos disciplinas isoladas..."></textarea></div>
+          <hr class="div" />
+          <div id="svc"></div>
+        </div>
+
+        <!-- SETORES -->
+        <div class="sec" id="s-setores">
+          <div class="stit">Setores Atendidos</div>
+          <div class="sdesc">Chips de classificacao tecnica na secao de servicos.</div>
+          <div id="setc" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem"></div>
+          <button class="badd" onclick="addSet()"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar setor</button>
+        </div>
+
+        <!-- PROCESSO -->
+        <div class="sec" id="s-processo">
+          <div class="stit">Processo (Timeline)</div>
+          <div class="sdesc">5 etapas de execucao — Capitulo 3.</div>
+          <div class="fg"><label class="fl">Titulo editorial</label><input class="fi" id="prt" placeholder="Disciplina de execucao. Do kickoff a entrega." /></div>
+          <div class="fg"><label class="fl">Paragrafo editorial</label><textarea class="fta" id="prs" rows="2" placeholder="Nao existe fase de planejamento separada..."></textarea></div>
+          <hr class="div" />
+          <div id="prc"></div>
+        </div>
+
+        <!-- DIFERENCIAIS -->
+        <div class="sec" id="s-difs">
+          <div class="stit">Diferenciais</div>
+          <div class="sdesc">5 pontos de diferenciacao — Capitulo 3, coluna esquerda.</div>
+          <div id="dfc"></div>
+        </div>
+
+        <!-- DEPOIMENTOS -->
+        <div class="sec" id="s-deps">
+          <div class="stit">Depoimentos</div>
+          <div class="sdesc">3 cards de depoimento — Capitulo 4. Adicione textos reais de clientes.</div>
+          <div id="dpc"></div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="sec" id="s-faq">
+          <div class="stit">FAQ</div>
+          <div class="sdesc">Perguntas e respostas — Capitulo 5. Edite, adicione ou remova.</div>
+          <div id="fqc"></div>
+          <button class="badd" onclick="addFaq()" style="margin-top:.5rem"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Adicionar pergunta</button>
+        </div>
+
+        <!-- CONTATO -->
+        <div class="sec" id="s-ct">
+          <div class="stit">Contato e Rodape</div>
+          <div class="sdesc">Dados de contato, WhatsApp e redes sociais.</div>
+          <div class="fg"><label class="fl">Numero WhatsApp (com codigo pais)</label><input class="fi" id="cwa" type="tel" placeholder="5522999096142" /></div>
+          <div class="fg"><label class="fl">Mensagem padrao WhatsApp</label><textarea class="fta" id="cwm" rows="2" placeholder="Ola! Vim pelo site..."></textarea></div>
+          <div class="fg"><label class="fl">Endereco</label><input class="fi" id="cen" placeholder="Av. Atlantica, 1454 Macae RJ" /></div>
+          <div class="fg"><label class="fl">E-mail</label><input class="fi" id="cem" type="email" placeholder="contato@gektec.com.br" /></div>
+          <hr class="div" />
+          <div class="fg"><label class="fl">URL LinkedIn</label><input class="fi" id="cli" type="url" placeholder="https://linkedin.com/company/gektec" /></div>
+          <div class="fg"><label class="fl">URL Facebook</label><input class="fi" id="cfb" type="url" placeholder="https://facebook.com/gektec" /></div>
+          <hr class="div" />
+          <div class="fg"><label class="fl">Avaliacao Google</label><input class="fi" id="cgr" placeholder="4.8/5" /><div class="pnote">Confirme o numero real antes de publicar</div></div>
+        </div>
+
+        <!-- BRANDING -->
+        <div class="sec" id="s-brand">
+          <div class="stit">Branding e Cores</div>
+          <div class="sdesc">Ajuste as cores do sistema visual do site.</div>
+          <div class="fg"><label class="fl">Cor principal (vermelho Gektec)</label><div class="fcr"><input type="color" id="bcp" value="#C4272C" oninput="sCI('bcp','bcph')" /><input class="fi" id="bcph" value="#C4272C" oninput="sCP('bcph','bcp')" style="font-family:'IBM Plex Mono',monospace" /></div></div>
+          <div class="fg"><label class="fl">Cor de acento (cobre)</label><div class="fcr"><input type="color" id="bca" value="#A9673A" oninput="sCI('bca','bcah')" /><input class="fi" id="bcah" value="#A9673A" oninput="sCP('bcah','bca')" style="font-family:'IBM Plex Mono',monospace" /></div></div>
+          <div class="fg"><label class="fl">Fundo principal</label><div class="fcr"><input type="color" id="bcf" value="#14171B" oninput="sCI('bcf','bcfh')" /><input class="fi" id="bcfh" value="#14171B" oninput="sCP('bcfh','bcf')" style="font-family:'IBM Plex Mono',monospace" /></div></div>
+          <hr class="div" />
+          <div class="fg"><label class="fl">Tipografia de destaque</label><select class="fse" id="bfnt"><option value="archivo">Archivo Expanded (atual)</option><option value="oswald">Oswald (condensada)</option><option value="bebas">Bebas Neue (impactante)</option></select></div>
+          <hr class="div" />
+          <div style="background:#1E2128;border:1px solid #343840;border-radius:3px;padding:1rem">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:#8B92A0;margin-bottom:.8rem;letter-spacing:.1em;text-transform:uppercase">Pre-visualizacao de cores</div>
+            <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div id="pcp" style="width:40px;height:40px;background:#C4272C;border-radius:2px"></div><span style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#8B92A0">Principal</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div id="pca" style="width:40px;height:40px;background:#A9673A;border-radius:2px"></div><span style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#8B92A0">Acento</span></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div id="pcf" style="width:40px;height:40px;background:#14171B;border:1px solid #343840;border-radius:2px"></div><span style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#8B92A0">Fundo</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="pva">
+        <div class="pvb">
+          <div class="pvd" style="background:#ff5f57"></div>
+          <div class="pvd" style="background:#febc2e"></div>
+          <div class="pvd" style="background:#28c840"></div>
+          <div class="pvu">index.html — preview ao vivo</div>
+          <button onclick="relPv()" style="background:none;border:none;color:#8B92A0;cursor:pointer;padding:2px 6px;font-family:'IBM Plex Mono',monospace;font-size:.68rem">Recarregar</button>
+        </div>
+        <iframe id="frm" src="index.html" title="Preview Gektec"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">OK</div>
+
+<script>
+const D={h:{tag:'EPC . Engenharia Eletrica Industrial . Atuacao Nacional',l1:'Energia',l2:'em escala',l3:'industrial.',sub:'Da subestacao a usina, a Gektec projeta, constroi e mantem a infraestrutura eletrica que grandes industrias nao podem parar de operar.',c1:'Solicitar proposta',c2:'Ver servicos',opa:35,img:null},st:[{v:'22',s:'+',l:'Anos de atuacao',ph:false},{v:'Nacional',s:'',l:'Abrangencia',ph:false},{v:'8',s:'',l:'Setores atendidos',ph:false},{v:'',s:'MW',l:'MW instalados',ph:true},{v:'',s:'',l:'Subestacoes entregues',ph:true}],sc:{t:'Cinco frentes. Uma entrega integrada.',s:'Nao oferecemos disciplinas isoladas. Cada projeto sai com ART, prontuario e cronograma cumprido.'},sv:[{n:'01',t:'EPC de Geracao Renovavel',d:'Usinas solares e eolicas: viabilidade, engenharia, suprimentos, construcao, testes e O&M.'},{n:'02',t:'Subestacoes e Redes AT/MT',d:'Subestacoes de qualquer porte, bays, linhas, protecao, controle e energizacao.'},{n:'03',t:'Engenharia Eletrica Industrial',d:'Expansoes, retrofits, cabines primarias, SPDA, paineis de comando e instrumentacao.'},{n:'04',t:'O&M e Paradas de Planta',d:'Manutencao preventiva/corretiva, termografia, ensaios, janelas criticas com QSMS.'},{n:'05',t:'Documentacao e Conformidade',d:'ART/CREA, as built, prontuario, relatorios de ensaio e dossies regulatorios.'}],se:['Energia & Utilidades','Oleo & Gas','Mineracao','Siderurgia','Papel & Celulose','Portos & Terminais','Logistica & Agronegocio','Processo Continuo'],pr:{t:'Disciplina de execucao. Do kickoff a entrega.',s:'Cada etapa tem responsavel, prazo e evidencia de entrega.',et:[{n:'01',l:'Etapa inicial',t:'Diagnostico de Escopo',d:'Levantamento de requisitos, riscos, restricoes do site e validacao de prazos.'},{n:'02',l:'Fase tecnica',t:'Engenharia e Suprimentos',d:'Projeto executivo completo e contratacao de fornecedores homologados.'},{n:'03',l:'Fase de campo',t:'Construcao e Montagem',d:'Mobilizacao, execucao com gestao de empreiteiros e controle de qualidade.'},{n:'04',l:'Validacao',t:'Testes e Comissionamento',d:'FAT/SAT, ajustes de protecao, energizacao segura com documentacao rastreavel.'},{n:'05',l:'Pos-obra',t:'Entrega e O&M',d:'As built, manuais, prontuario completo e plano de manutencao estruturado.'}]},df:[{t:'Ponta a ponta como integrador EPC',d:'Engenharia, suprimentos e construcao sob uma unica gestao.'},{t:'Risco sob controle desde o dia 1',d:'Analise de rede e risco integrados desde o diagnostico inicial.'},{t:'Prazo como disciplina de equipe',d:'Cronogramas com marcos, responsaveis e evidencias de conclusao.'},{t:'Escala nacional com cadeia homologada',d:'Mobilizacao onde o projeto estiver, fornecedores pre-qualificados.'},{t:'Equipe senior multidisciplinar',d:'Engenharia, suprimentos e QSMS alinhados desde o kick-off.'}],dp:[{tx:'',au:'',ca:'',em:'',on:true},{tx:'',au:'',ca:'',em:'',on:true},{tx:'',au:'',ca:'',em:'',on:true}],fq:[{p:'Qual o custo tipico de uma subestacao?',r:'Varia conforme tensao, potencia, tipo construtivo e automacao. O diagnostico de escopo define a estimativa real.'},{p:'Diferenca entre cabine primaria e subestacao?',r:'A cabine primaria e o ponto de entrada da concessionaria. A subestacao e mais ampla: transformadores, disjuntores e controle.'},{p:'O que e EPC chave na mao?',r:'Um integrador cuida do projeto, compra e obra. Sem lacunas entre disciplinas separadas.'},{p:'Normas obrigatorias em instalacoes eletricas industriais?',r:'NR-10, NR-35, ABNT/NBR 5410, 5419, 14039 e normas IEC para equipamentos importados.'},{p:'Prazo medio de um projeto de engenharia eletrica?',r:'Menor porte: 4 a 12 semanas. Subestacoes MT/AT: 4 a 12 meses. Geracao renovavel: ate 36 meses.'},{p:'Vida util de um sistema eletrico bem executado?',r:'Transformadores: 25-40 anos. Paineis e disjuntores MT: 20-30 anos com manutencao.'}],ct:{wa:'5522999096142',wm:'Ola! Vim pelo site institucional e gostaria de solicitar uma proposta tecnica.',en:'Av. Atlantica, 1454 - Cavaleiros, Macae RJ',em:'contato@gektec.com.br',li:'#',fb:'#',gr:''},br:{cp:'#C4272C',ca:'#A9673A',cf:'#14171B',fn:'archivo'}};
+
+let G=JSON.parse(JSON.stringify(D));
+let cs='hero';
+const SN={hero:'Hero e Abertura',stats:'Stats e Numeros',servicos:'Servicos',setores:'Setores',processo:'Processo Timeline',difs:'Diferenciais',deps:'Depoimentos',faq:'FAQ',ct:'Contato e Rodape',brand:'Branding e Cores'};
+const LK='gk_adm_v4';
+
+function doLogin(){const e=document.getElementById('le').value.trim(),p=document.getElementById('lp').value,er=document.getElementById('lerr');if(e==='admin@gektec.com.br'&&p==='demo1234'){document.getElementById('ls').classList.add('h');setTimeout(()=>{document.getElementById('ls').style.display='none'},450);load();rAll();}else{er.style.display='block';document.getElementById('lp').value='';}}
+function doLogout(){const s=document.getElementById('ls');s.style.display='flex';setTimeout(()=>s.classList.remove('h'),10);document.getElementById('le').value='';document.getElementById('lp').value='';document.getElementById('lerr').style.display='none';}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&(document.activeElement.id==='le'||document.activeElement.id==='lp'))doLogin();});
+function oSB(){document.getElementById('sb').classList.add('op');document.getElementById('ov').classList.add('vis');}
+function cSB(){document.getElementById('sb').classList.remove('op');document.getElementById('ov').classList.remove('vis');}
+function gS(n){cs=n;document.querySelectorAll('.ni').forEach(e=>e.classList.remove('on'));document.querySelector('[data-s="'+n+'"]').classList.add('on');document.querySelectorAll('.sec').forEach(e=>e.classList.remove('on'));document.getElementById('s-'+n).classList.add('on');document.getElementById('secnm').textContent=SN[n];cSB();}
+function relPv(){const f=document.getElementById('frm');if(f)f.src=f.src;}
+function save(){localStorage.setItem(LK,JSON.stringify(G));}
+function load(){try{const s=localStorage.getItem(LK);if(s)G=JSON.parse(s);}catch(e){G=JSON.parse(JSON.stringify(D));}}
+function sv(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
+function gv(id){const el=document.getElementById(id);return el?el.value:'';}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function rAll(){rHero();rStats();rSv();rSet();rProc();rDif();rDep();rFaq();rCt();rBr();}
+
+function rHero(){sv('htag',G.h.tag);sv('hl1',G.h.l1);sv('hl2',G.h.l2);sv('hl3',G.h.l3);sv('hsub',G.h.sub);sv('hc1',G.h.c1);sv('hc2',G.h.c2);const op=document.getElementById('hopa');if(op){op.value=G.h.opa||35;document.getElementById('hopav').textContent=(G.h.opa||35)+'%';}if(G.h.img){const p=document.getElementById('hipv');if(p){p.src=G.h.img;p.style.display='block';}}}
+
+function rStats(){const c=document.getElementById('stc');c.innerHTML='';G.st.forEach((s,i)=>{const hasPh=i>=3;c.innerHTML+=`<div class="ce"><div class="ceh"><div class="cen">STAT 0${i+1}</div></div>${hasPh?`<div class="trow"><span class="tlbl">Usar [NUMERO REAL]</span><label class="tog"><input type="checkbox" id="sph${i}" ${s.ph?'checked':''}><div class="tsl"></div></label></div>`:''}<div class="fg"><label class="fl">Valor</label><input class="fi" id="sv${i}" value="${esc(s.v)}" oninput="G.st[${i}].v=this.value" /></div>${i<3||i===3?`<div class="fg"><label class="fl">Sufixo</label><input class="fi" id="ss${i}" value="${esc(s.s)}" oninput="G.st[${i}].s=this.value" /></div>`:''}<div class="fg"><label class="fl">Label</label><input class="fi" id="sl${i}" value="${esc(s.l)}" oninput="G.st[${i}].l=this.value" /></div></div>`;});G.st.forEach((s,i)=>{if(i>=3){const el=document.getElementById('sph'+i);if(el)el.onchange=()=>{G.st[i].ph=el.checked;};}})}
+
+function rSv(){sv('svct',G.sc.t);sv('svcs',G.sc.s);const c=document.getElementById('svc');c.innerHTML='';G.sv.forEach((s,i)=>{c.innerHTML+=`<div class="ce"><div class="ceh"><div class="cen">FRENTE 0${i+1}</div></div><div class="fg"><label class="fl">Titulo</label><input class="fi" value="${esc(s.t)}" oninput="G.sv[${i}].t=this.value" /></div><div class="fg"><label class="fl">Descricao</label><textarea class="fta" rows="3" oninput="G.sv[${i}].d=this.value">${esc(s.d)}</textarea></div></div>`;});}
+
+function rSet(){const c=document.getElementById('setc');c.innerHTML='';G.se.forEach((s,i)=>{const d=document.createElement('div');d.style.cssText='display:flex;align-items:center;gap:4px;background:#1E2128;border:1px solid #343840;border-radius:2px;padding:5px 10px';d.innerHTML=`<input value="${esc(s)}" style="background:none;border:none;color:#E8E6E1;font-family:'IBM Plex Mono',monospace;font-size:.72rem;width:${Math.max(60,s.length*7.5)}px;min-height:28px" oninput="G.se[${i}]=this.value;this.style.width=Math.max(60,this.value.length*7.5)+'px'" /><button onclick="rmSet(${i})" style="background:none;border:none;color:#8B92A0;cursor:pointer;font-size:16px;padding:0 2px" onmouseover="this.style.color='#C4272C'" onmouseout="this.style.color='#8B92A0'">x</button>`;c.appendChild(d);});}
+function addSet(){G.se.push('Novo Setor');rSet();}
+function rmSet(i){G.se.splice(i,1);rSet();}
+
+function rProc(){sv('prt',G.pr.t);sv('prs',G.pr.s);const c=document.getElementById('prc');c.innerHTML='';G.pr.et.forEach((e,i)=>{c.innerHTML+=`<div class="ce"><div class="ceh"><div class="cen">ETAPA ${e.n}</div></div><div class="fg"><label class="fl">Label</label><input class="fi" value="${esc(e.l)}" oninput="G.pr.et[${i}].l=this.value" /></div><div class="fg"><label class="fl">Titulo</label><input class="fi" value="${esc(e.t)}" oninput="G.pr.et[${i}].t=this.value" /></div><div class="fg"><label class="fl">Descricao</label><textarea class="fta" rows="2" oninput="G.pr.et[${i}].d=this.value">${esc(e.d)}</textarea></div></div>`;});}
+
+function rDif(){const c=document.getElementById('dfc');c.innerHTML='';G.df.forEach((d,i)=>{c.innerHTML+=`<div class="ce"><div class="ceh"><div class="cen">DIFERENCIAL 0${i+1}</div></div><div class="fg"><label class="fl">Titulo</label><input class="fi" value="${esc(d.t)}" oninput="G.df[${i}].t=this.value" /></div><div class="fg"><label class="fl">Descricao</label><textarea class="fta" rows="2" oninput="G.df[${i}].d=this.value">${esc(d.d)}</textarea></div></div>`;});}
+
+function rDep(){const c=document.getElementById('dpc');c.innerHTML='';G.dp.forEach((d,i)=>{c.innerHTML+=`<div class="ce"><div class="ceh"><div class="cen">DEPOIMENTO 0${i+1}</div></div><div class="trow"><span class="tlbl">Ativo (visivel no site)</span><label class="tog"><input type="checkbox" ${d.on?'checked':''} onchange="G.dp[${i}].on=this.checked"><div class="tsl"></div></label></div><div class="fg"><label class="fl">Texto</label><textarea class="fta" rows="3" oninput="G.dp[${i}].tx=this.value" placeholder="Texto real do cliente...">${esc(d.tx)}</textarea></div><div class="fg"><label class="fl">Autor</label><input class="fi" value="${esc(d.au||'')}" oninput="G.dp[${i}].au=this.value" placeholder="Nome Sobrenome" /></div><div class="fg"><label class="fl">Cargo</label><input class="fi" value="${esc(d.ca||'')}" oninput="G.dp[${i}].ca=this.value" placeholder="Gerente de Engenharia" /></div><div class="fg"><label class="fl">Empresa</label><input class="fi" value="${esc(d.em||'')}" oninput="G.dp[${i}].em=this.value" placeholder="Nome da empresa" /></div></div>`;});}
+
+function rFaq(){const c=document.getElementById('fqc');c.innerHTML='';G.fq.forEach((f,i)=>{c.innerHTML+=`<div class="ce"><div class="ceh"><div class="cen">FAQ 0${i+1}</div><button class="brm" onclick="rmFaq(${i})">Remover</button></div><div class="fg"><label class="fl">Pergunta</label><input class="fi" value="${esc(f.p)}" oninput="G.fq[${i}].p=this.value" /></div><div class="fg"><label class="fl">Resposta</label><textarea class="fta" rows="3" oninput="G.fq[${i}].r=this.value">${esc(f.r)}</textarea></div></div>`;});}
+function addFaq(){G.fq.push({p:'',r:''});rFaq();}
+function rmFaq(i){G.fq.splice(i,1);rFaq();}
+
+function rCt(){const c=G.ct;sv('cwa',c.wa);sv('cwm',c.wm);sv('cen',c.en);sv('cem',c.em);sv('cli',c.li);sv('cfb',c.fb);sv('cgr',c.gr);}
+
+function rBr(){const b=G.br;['bcp','bca','bcf'].forEach((id,i)=>{const v=[b.cp,b.ca,b.cf][i];document.getElementById(id).value=v;document.getElementById(id+'h').value=v;});document.getElementById('bfnt').value=b.fn;updPv();}
+function sCI(ci,hi){document.getElementById(hi).value=document.getElementById(ci).value;updPv();}
+function sCP(hi,ci){const v=document.getElementById(hi).value;if(/^#[0-9A-Fa-f]{6}$/.test(v)){document.getElementById(ci).value=v;updPv();}}
+function updPv(){['cp','ca','cf'].forEach((k,i)=>{const id=['bcp','bca','bcf'][i];document.getElementById('p'+k).style.background=document.getElementById(id).value;});}
+
+function upImg(input){const f=input.files[0];if(!f)return;if(f.size>5242880){toast('Arquivo muito grande. Max 5MB.',true);return;}const r=new FileReader();r.onload=e=>{G.h.img=e.target.result;const p=document.getElementById('hipv');p.src=e.target.result;p.style.display='block';};r.readAsDataURL(f);}
+
+function collect(){G.h.tag=gv('htag');G.h.l1=gv('hl1');G.h.l2=gv('hl2');G.h.l3=gv('hl3');G.h.sub=gv('hsub');G.h.c1=gv('hc1');G.h.c2=gv('hc2');const op=document.getElementById('hopa');if(op)G.h.opa=parseInt(op.value);G.sc.t=gv('svct');G.sc.s=gv('svcs');G.pr.t=gv('prt');G.pr.s=gv('prs');G.ct.wa=gv('cwa');G.ct.wm=gv('cwm');G.ct.en=gv('cen');G.ct.em=gv('cem');G.ct.li=gv('cli');G.ct.fb=gv('cfb');G.ct.gr=gv('cgr');G.br.cp=gv('bcph');G.br.ca=gv('bcah');G.br.cf=gv('bcfh');G.br.fn=document.getElementById('bfnt').value;}
+
+function pub(){collect();save();toast('Alteracoes publicadas! Atualize o site para ver.',false);relPv();}
+
+function rstSec(){const km={hero:'h',stats:'st',servicos:'sv',setores:'se',processo:'pr',difs:'df',deps:'dp',faq:'fq',ct:'ct',brand:'br'};const k=km[cs];if(k&&D[k]!==undefined)G[k]=JSON.parse(JSON.stringify(D[k]));if(cs==='servicos')G.sc=JSON.parse(JSON.stringify(D.sc));rAll();toast('Secao restaurada para os valores padrao.',false);}
+
+function toast(msg,err){const t=document.getElementById('toast');t.textContent=msg;t.className=err?'on err':'on';clearTimeout(window._tt);window._tt=setTimeout(()=>t.className='',3200);}
+
+document.addEventListener('DOMContentLoaded',()=>{load();rAll();});
+</script>
+</body>
+</html>

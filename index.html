@@ -2738,5 +2738,132 @@
     document.addEventListener('DOMContentLoaded', adjustLayoutForMobile);
   </script>
 
+  <!-- CMS HYDRATION -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const saved = localStorage.getItem('gk_adm_v4');
+        if (!saved) return;
+        const G = JSON.parse(saved);
+        
+        // 1. BRANDING
+        if(G.br) {
+          const root = document.documentElement;
+          root.style.setProperty('--vermelho-gektec', G.br.cp);
+          root.style.setProperty('--cobre', G.br.ca);
+          root.style.setProperty('--grafite-profundo', G.br.cf);
+          if(G.br.fn === 'oswald') root.style.setProperty('--font-display', '"Oswald", sans-serif');
+          else if(G.br.fn === 'bebas') root.style.setProperty('--font-display', '"Bebas Neue", sans-serif');
+          else root.style.setProperty('--font-display', '"Archivo Expanded", sans-serif');
+        }
+
+        // 2. HERO
+        if(G.h) {
+          const t = document.querySelector('.hero-tag'); if(t) t.textContent = G.h.tag;
+          const h1 = document.querySelector('#hero-heading'); 
+          if(h1) h1.innerHTML = `${G.h.l1}<br>${G.h.l2}<br><span class="accent">${G.h.l3}</span>`;
+          const sub = document.querySelector('.hero-sub'); if(sub) sub.textContent = G.h.sub;
+          const c1 = document.querySelector('.btn-primary'); if(c1) c1.innerHTML = `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17l6-5-6-5"/></svg> ${G.h.c1}`;
+          const c2 = document.querySelector('.btn-secondary'); if(c2) c2.textContent = G.h.c2;
+          const bg = document.querySelector('.hero-bg');
+          if(bg) {
+            if(G.h.img) bg.style.backgroundImage = `url(${G.h.img})`;
+            if(G.h.opa !== undefined) bg.style.opacity = G.h.opa / 100;
+          }
+        }
+
+        // 3. STATS
+        if(G.st && Array.isArray(G.st)) {
+          const stats = document.querySelectorAll('.stat-item');
+          G.st.forEach((s, i) => {
+            if(stats[i]) {
+              const v = stats[i].querySelector('.stat-value');
+              const l = stats[i].querySelector('.stat-label');
+              if(v) {
+                if(s.ph) v.innerHTML = `<span class="stat-placeholder">[NÚMERO REAL]</span> <span class="unit">${s.s||''}</span>`;
+                else {
+                  const hasCounter = v.querySelector('.counter');
+                  if(hasCounter && !isNaN(parseInt(s.v))) v.innerHTML = `<span class="counter" data-target="${s.v}">0</span><span class="unit">${s.s||''}</span>`;
+                  else v.innerHTML = `${s.v} <span class="unit">${s.s||''}</span>`;
+                }
+              }
+              if(l) l.textContent = s.l;
+            }
+          });
+        }
+
+        // 4. SERVICOS
+        if(G.sc) {
+          const st = document.querySelector('#o-que-construimos .headline-capitulo');
+          if(st) st.textContent = G.sc.t;
+          const ss = document.querySelector('#o-que-construimos .max-w-editorial p');
+          if(ss) ss.textContent = G.sc.s;
+        }
+        if(G.sv && Array.isArray(G.sv)) {
+          const cards = document.querySelectorAll('.ficha-card');
+          G.sv.forEach((s, i) => {
+            if(cards[i]) {
+              const ct = cards[i].querySelector('.ficha-titulo'); if(ct) ct.textContent = s.t;
+              const cd = cards[i].querySelector('.ficha-desc'); if(cd) cd.textContent = s.d;
+            }
+          });
+        }
+
+        // 5. SETORES
+        if(G.se && Array.isArray(G.se)) {
+          const setGrid = document.querySelector('.setores-grid');
+          if(setGrid) {
+            setGrid.innerHTML = '';
+            G.se.forEach(s => {
+              const span = document.createElement('span');
+              span.className = 'setor-chip';
+              span.setAttribute('role', 'listitem');
+              span.textContent = s;
+              setGrid.appendChild(span);
+            });
+          }
+        }
+
+        // 6. PROCESSO
+        if(G.pr) {
+          const pt = document.querySelector('#como-operamos .headline-capitulo');
+          if(pt) pt.innerHTML = G.pr.t.replace('.', '.<br>');
+          const ps = document.querySelector('#como-operamos > div > div > p');
+          if(ps) ps.textContent = G.pr.s;
+        }
+        if(G.pr && G.pr.et) {
+          const items = document.querySelectorAll('.timeline-item');
+          G.pr.et.forEach((e, i) => {
+            if(items[i]) {
+              const l = items[i].querySelector('.timeline-etapa'); if(l) l.textContent = e.l;
+              const t = items[i].querySelector('.timeline-titulo'); if(t) t.textContent = e.t;
+              const d = items[i].querySelector('.timeline-desc'); if(d) d.textContent = e.d;
+            }
+          });
+        }
+        
+        // 7. CONTATO
+        if(G.ct) {
+          // WhatsApp URLs
+          const waLinks = document.querySelectorAll('a[href*="wa.me"]');
+          waLinks.forEach(l => {
+            l.href = `https://wa.me/${G.ct.wa}?text=${encodeURIComponent(G.ct.wm)}`;
+          });
+          // Update generic email links if any
+          const emLinks = document.querySelectorAll('a[href^="mailto:"]');
+          emLinks.forEach(l => {
+            l.href = `mailto:${G.ct.em}`;
+            if(l.textContent.includes('@')) l.textContent = G.ct.em;
+          });
+        }
+
+        // Trigger GSAP refresh just in case
+        setTimeout(() => { if(window.ScrollTrigger) window.ScrollTrigger.refresh(); }, 500);
+
+      } catch(err) {
+        console.error('Erro na hidratação do CMS:', err);
+      }
+    });
+  </script>
 </body>
 </html>
